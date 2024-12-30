@@ -10,14 +10,14 @@
       position: fixed;
       bottom: 20px;
       right: 20px;
-      width: 400px;
-      height: 300px;
+      width: 800px;
+      height: 600px;
       background: white;
       border: 1px solid #ccc;
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       z-index: 10000;
-      overflow: auto;
+      overflow: hidden;
       resize: both;
       padding: 10px;
       font-family: Arial, sans-serif;
@@ -33,16 +33,15 @@
       margin: -10px -10px 10px -10px;
     `;
     titleBar.innerHTML = `
-      <span>Content Summary</span>
+      <span>Mind Map</span>
       <button id="close-mindmap" style="cursor:pointer;">×</button>
     `;
     
     const content = document.createElement('div');
-    content.id = 'summary-content';
+    content.id = 'mindmap-content';
     content.style.cssText = `
-      white-space: pre-wrap;
-      line-height: 1.5;
-      padding: 10px;
+      width: 100%;
+      height: calc(100% - 40px);
     `;
     
     container.appendChild(titleBar);
@@ -87,41 +86,66 @@
   }
 
   function displaySummary(markdown) {
-    const container = document.getElementById('summary-content');
+    const container = document.getElementById('mindmap-content');
     if (!container) {
       throw new Error('Container not found');
     }
-    
-    // 增强 markdown 转换逻辑
-    const formattedText = markdown
-      .replace(/### (.*?)(\n|$)/g, '<h3>$1</h3>')
-      .replace(/## (.*?)(\n|$)/g, '<h2>$1</h2>')
-      .replace(/# (.*?)(\n|$)/g, '<h1>$1</h1>')
-      // 处理列表
-      .replace(/^\s*[-*]\s+(.*?)(\n|$)/gm, '<li>$1</li>')
-      // 处理段落
-      .replace(/([^\n]+)\n\n/g, '<p>$1</p>')
-      // 处理单行换行
-      .replace(/\n/g, '<br>');
-    
-    console.log('Formatted Text:', formattedText);
-    
-    container.innerHTML = formattedText;
-    
-    // 添加基本样式
-    const style = document.createElement('style');
-    style.textContent = `
-      #summary-content h1, #summary-content h2, #summary-content h3 {
-        margin: 10px 0;
-        color: #333;
-      }
-      #summary-content h1 { font-size: 1.5em; }
-      #summary-content h2 { font-size: 1.3em; }
-      #summary-content h3 { font-size: 1.1em; }
-      #summary-content p { margin: 8px 0; }
-      #summary-content li { margin: 4px 0; }
-    `;
-    document.head.appendChild(style);
+
+    // 创建 SVG 元素
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.style.width = '100%';
+    svg.style.height = '100%';
+    container.appendChild(svg);
+
+    // 检查库是否已加载
+    if (typeof d3 === 'undefined') {
+      throw new Error('d3 library not loaded');
+    }
+
+    // 动态加载 markmap
+    const loadMarkmapScript = () => {
+      return new Promise((resolve, reject) => {
+        if (window.markmap) {
+          resolve(window.markmap);
+          return;
+        }
+
+        // 重新加载必要的脚本
+        const scripts = [
+          chrome.runtime.getURL('lib/markmap-lib.min.js'),
+          chrome.runtime.getURL('lib/markmap-view.min.js')
+        ];
+
+        Promise.all(scripts.map(src => {
+          return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
+        })).then(() => {
+          if (window.markmap) {
+            resolve(window.markmap);
+          } else {
+            reject(new Error('Failed to load markmap'));
+          }
+        }).catch(reject);
+      });
+    };
+
+    // 使用异步函数来等待库加载
+    return loadMarkmapScript()
+      .then(markmap => {
+        const transformer = new markmap.Transformer();
+        const { root } = transformer.transform(markdown);
+        const mm = markmap.Markmap.create(svg, null, root);
+        mm.fit(); // 自适应视图
+      })
+      .catch(error => {
+        console.error('Error loading markmap:', error);
+        container.innerHTML = `<div style="color: red;">Error loading mind map: ${error.message}</div>`;
+      });
   }
 
   async function summarizeWithAI(content) {
@@ -208,7 +232,6 @@
   }
 
   async function extractContent() {
-    // 检查是否已经存在容器
     if (document.getElementById('mindmap-container')) {
       console.log('Container already exists');
       return;
@@ -223,7 +246,6 @@
 
     try {
       const mainContent = document.querySelector('article, main, .article, .content') || document.body;
-      
       let cleanedText = cleanText(mainContent)
         .replace(/\s+/g, ' ')
         .replace(/\n\s*\n/g, '\n')
@@ -235,11 +257,10 @@
       }
 
       const summary = await summarizeWithAI(cleanedText);
-      if (!document.getElementById('mindmap-container')) {  // 再次检查确保不重复创建
+      if (!document.getElementById('mindmap-container')) {
         createFloatingContainer();
-        displaySummary(summary);
+        await displaySummary(summary); // 等待思维导图渲染完成
       }
-
     } catch (error) {
       console.error('Error generating summary:', error);
       throw error;

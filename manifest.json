@@ -22,15 +22,18 @@
     {
       "matches": ["<all_urls>"],
       "js": [
-        "config.js",
+        "lib/d3.min.js",
+        "lib/markmap-lib.min.js",
+        "lib/markmap-view.min.js",
         "scripts/content.js"
+      ],
+      "css": [
+        "lib/markmap-toolbar.css"
       ]
     }
   ],
   "web_accessible_resources": [{
-    "resources": [
-      "lib/*"
-    ],
+    "resources": ["lib/*"],
     "matches": ["<all_urls>"]
   }]
 } 
