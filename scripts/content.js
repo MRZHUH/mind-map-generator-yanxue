@@ -149,31 +149,44 @@
   }
 
   async function summarizeWithAI(content) {
-   
     try {
-      const response = await fetch('https://one.iqiy.cn/v1/chat/completions', {
+      // 从 chrome.storage 获取设置
+      const { apiKey, apiBase } = await chrome.storage.sync.get(['apiKey', 'apiBase']);
+      if (!apiKey || !apiBase) {
+        throw new Error('API settings not configured');
+      }
+
+      const response = await fetch(`${apiBase}/v1/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer sk-KTZRgAPOwZciYuhA1c03E5De1f8b40C189B7632000717300`
+          'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
           model: 'gpt-3.5-turbo-16k',
           messages: [{
             role: "user",
-            content: `请使用标记标题（#表示主主题，##表示子主题，###表示详细信息）以层次结构总结以下内容。内容： ${content}`
+            content: `请将以下内容总结为思维导图的形式，使用Markdown格式，必须使用#、##、###等标题语法来表示层级关系。
+            
+            示例格式：
+            # 主题
+            ## 子主题1
+            ### 详细信息1
+            ### 详细信息2
+            ## 子主题2
+            ### 详细信息3
+            
+            需要总结的内容：${content}`
           }],
           temperature: 0.7
         })
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(`API Error: ${error.error?.message || 'Unknown error'}`);
+        throw new Error(`API Error: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('API Response:', data);
       return data.choices[0].message.content;
     } catch (error) {
       console.error('OpenAI API Error:', error);
