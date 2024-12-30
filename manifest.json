@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "Web Mind Map Generator",
+  "version": "1.0",
+  "description": "Generate mind maps from web page content",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "https://one.iqiy.cn/*"
+  ],
+  "host_permissions": [
+    "https://one.iqiy.cn/*"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "config.js",
+        "scripts/content.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": [{
+    "resources": [
+      "lib/*"
+    ],
+    "matches": ["<all_urls>"]
+  }]
+} 
