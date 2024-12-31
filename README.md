@@ -55,4 +55,4 @@
 
 ## 联系方式
 
-如有任何问题或反馈，请联系 [your-email@example.com](mailto:your-email@example.com)。
+如有任何问题或反馈，请联系 [bond@funcd.org](mailto:bond@funcd.org)。
