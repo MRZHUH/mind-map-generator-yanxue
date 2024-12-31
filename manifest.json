@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Web Mind Map Generator",
+  "name": "研学思维导图",
   "version": "1.3",
-  "description": "Generate mind maps from web page content",
+  "description": "从网页内容生成思维导图",
   "permissions": [
     "activeTab",
     "scripting",
