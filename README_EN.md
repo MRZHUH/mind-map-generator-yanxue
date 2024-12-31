@@ -11,6 +11,11 @@ The Mind Map Generator is a Chrome extension that allows users to generate mind 
 - **Content Extraction**: Automatically extracts and cleans content from the current web page.
 - **Mind Map Generation**: Generates a mind map in Markdown format, using the specified OpenAI model.
 
+## Demo
+![demo01.png](images/demo01.png)
+![demo02.png](images/demo02.png)
+![demo03.png](images/demo03.png)
+
 ## Installation
 
 1. **Clone the Repository**: 

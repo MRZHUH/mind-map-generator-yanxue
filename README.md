@@ -11,6 +11,11 @@
 - **内容提取**：自动从当前网页提取并清理内容。
 - **思维导图生成**：使用指定的OpenAI模型生成Markdown格式的思维导图。
 
+## 效果展示
+![demo01.png](images/demo01.png)
+![demo02.png](images/demo02.png)
+![demo03.png](images/demo03.png)
+
 ## 安装
 
 1. **克隆仓库**：
