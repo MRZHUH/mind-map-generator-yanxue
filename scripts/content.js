@@ -1,7 +1,7 @@
 // 使用立即执行函数来避免全局变量污染
 (function() {
   let isProcessing = false;
-  let isListenerRegistered = false;
+  let zoomScale = 1; // Initialize zoom scale
 
   function createFloatingContainer() {
     const container = document.createElement('div');
@@ -17,7 +17,7 @@
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       z-index: 10000;
-      overflow: hidden;
+      overflow: auto;
       resize: both;
       padding: 10px;
       font-family: Arial, sans-serif;
@@ -33,8 +33,13 @@
       margin: -10px -10px 10px -10px;
     `;
     titleBar.innerHTML = `
-      <span>Mind Map</span>
-      <button id="close-mindmap" style="cursor:pointer;">×</button>
+      <span>研学思维导图</span>
+      <div>
+        <button id="zoom-in" style="cursor:pointer; margin-right: 5px; font-size: 16px; padding: 5px 10px;">+</button>
+        <input id="zoom-percentage" type="text" value="100%" style="width: 60px; text-align: center; margin-right: 5px; font-size: 16px;" />
+        <button id="zoom-out" style="cursor:pointer; font-size: 16px; padding: 5px 10px;">-</button>
+        <button id="close-mindmap" style="cursor:pointer; margin-left: 5px; font-size: 16px; padding: 5px 10px;">×</button>
+      </div>
     `;
     
     const content = document.createElement('div');
@@ -52,8 +57,51 @@
     closeButton.addEventListener('click', () => {
       container.remove();
     });
+
+    const zoomInButton = document.getElementById('zoom-in');
+    const zoomOutButton = document.getElementById('zoom-out');
+    const zoomPercentageInput = document.getElementById('zoom-percentage');
+    
+    zoomInButton.addEventListener('click', () => {
+      zoomScale *= 1.2; // Increase zoom scale
+      updateZoomDisplay();
+      applyZoom();
+    });
+
+    zoomOutButton.addEventListener('click', () => {
+      zoomScale /= 1.2; // Decrease zoom scale
+      updateZoomDisplay();
+      applyZoom();
+    });
+
+    zoomPercentageInput.addEventListener('input', () => {
+      const newZoom = parseFloat(zoomPercentageInput.value) / 100;
+      if (!isNaN(newZoom) && newZoom > 0) {
+        zoomScale = newZoom;
+        applyZoom();
+      }
+    });
+
+    zoomPercentageInput.addEventListener('blur', () => {
+      updateZoomDisplay(); // Reset to current zoom if input is invalid
+    });
     
     implementDrag(titleBar, container);
+  }
+
+  function updateZoomDisplay() {
+    const zoomPercentageInput = document.getElementById('zoom-percentage');
+    if (zoomPercentageInput) {
+      zoomPercentageInput.value = `${(zoomScale * 100).toFixed(0)}%`;
+    }
+  }
+
+  function applyZoom() {
+    const svg = document.querySelector('#mindmap-content svg');
+    if (svg) {
+      svg.style.transform = `scale(${zoomScale})`;
+      svg.style.transformOrigin = '0 0'; // Set transform origin to top-left
+    }
   }
 
   function implementDrag(titleBar, container) {
@@ -91,18 +139,21 @@
       throw new Error('Container not found');
     }
 
-    // 创建 SVG 元素
+    // Clear previous content
+    container.innerHTML = '';
+
+    // Create SVG element
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.style.width = '100%';
     svg.style.height = '100%';
     container.appendChild(svg);
 
-    // 检查库是否已加载
+    // Check if d3 library is loaded
     if (typeof d3 === 'undefined') {
       throw new Error('d3 library not loaded');
     }
 
-    // 动态加载 markmap
+    // Load markmap script
     const loadMarkmapScript = () => {
       return new Promise((resolve, reject) => {
         if (window.markmap) {
@@ -110,7 +161,6 @@
           return;
         }
 
-        // 重新加载必要的脚本
         const scripts = [
           chrome.runtime.getURL('lib/markmap-lib.min.js'),
           chrome.runtime.getURL('lib/markmap-view.min.js')
@@ -134,13 +184,13 @@
       });
     };
 
-    // 使用异步函数来等待库加载
+    // Use async function to wait for library loading
     return loadMarkmapScript()
       .then(markmap => {
         const transformer = new markmap.Transformer();
         const { root } = transformer.transform(markdown);
         const mm = markmap.Markmap.create(svg, null, root);
-        mm.fit(); // 自适应视图
+        mm.fit(); // Fit view
       })
       .catch(error => {
         console.error('Error loading markmap:', error);
@@ -176,7 +226,7 @@
             ## 子主题2
             ### 详细信息3
             
-            需要总结的内容：${content}`
+            忽略与内容主体无关的信息，需要总结的内容：${content}`
           }],
           temperature: 0.7
         })
@@ -295,4 +345,4 @@
     window.hasRegisteredContentListener = true;
   }
 
-})(); 
+})();
