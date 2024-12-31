@@ -36,7 +36,6 @@ document.getElementById('generate').addEventListener('click', async () => {
       return;
     }
 
-    // 显示生成中状态
     document.getElementById('status').textContent = '后台生成中，请等待...';
 
     await chrome.scripting.executeScript({

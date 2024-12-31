@@ -198,9 +198,8 @@
       });
   }
 
-  async function summarizeWithAI(content) {
+  async function summarizeWithAI(content, model) {
     try {
-      // 从 chrome.storage 获取设置
       const { apiKey, apiBase } = await chrome.storage.sync.get(['apiKey', 'apiBase']);
       if (!apiKey || !apiBase) {
         throw new Error('API settings not configured');
@@ -213,7 +212,7 @@
           'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo-16k',
+          model: model,
           messages: [{
             role: "user",
             content: `请将以下内容总结为思维导图的形式，使用Markdown格式，必须使用#、##、###等标题语法来表示层级关系。
@@ -319,7 +318,10 @@
         return;
       }
 
-      const summary = await summarizeWithAI(cleanedText);
+      // Retrieve the model from the message configuration
+      const { model } = await chrome.storage.sync.get(['model']);
+      const summary = await summarizeWithAI(cleanedText, model); // Pass the model here
+
       if (!document.getElementById('mindmap-container')) {
         createFloatingContainer();
         await displaySummary(summary); // 等待思维导图渲染完成

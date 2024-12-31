@@ -1,4 +1,4 @@
 const CONFIG = {
-  OPENAI_API_KEY: 'sk-KTZRgAPOwZciYuhA1c03E5De1f8b40C189B7632000717300',
-  MODEL: 'gpt-3.5-turbo'
+  OPENAI_API_KEY: '',
+  MODEL: ''
 }; 

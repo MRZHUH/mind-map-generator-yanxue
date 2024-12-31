@@ -6,11 +6,9 @@
   "permissions": [
     "activeTab",
     "scripting",
-    "storage",
-    "https://one.iqiy.cn/*"
+    "storage"
   ],
   "host_permissions": [
-    "https://one.iqiy.cn/*"
   ],
   "action": {
     "default_popup": "popup/popup.html",
