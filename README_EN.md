@@ -20,7 +20,7 @@ The Mind Map Generator is a Chrome extension that allows users to generate mind 
 
 1. **Clone the Repository**: 
    ```bash
-   git clone https://github.com/yourusername/mind-map-generator.git
+   git clone https://github.com/MRZHUH/mind-map-generator-yanxue.git
    ```
 
 2. **Load the Extension in Chrome**:

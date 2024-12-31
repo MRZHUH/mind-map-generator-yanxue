@@ -20,7 +20,7 @@
 
 1. **克隆仓库**：
    ```bash
-   git clone https://github.com/yourusername/mind-map-generator.git
+   git clone https://github.com/MRZHUH/mind-map-generator-yanxue.git
    ```
 
 2. **在Chrome中加载扩展**：
